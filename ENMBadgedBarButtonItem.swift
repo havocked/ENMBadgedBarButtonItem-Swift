@@ -14,11 +14,12 @@ let kENMDefaultPadding: CGFloat = 3.0
 let kENMDefaultMinSize: CGFloat = 8.0
 let kENMDefaultOriginX: CGFloat = 0.0
 let kENMDefaultOriginY: CGFloat = 0.0
+let kENMDefaultCustomViewHeight: CGFloat = 30.0
 
 class ENMBadgedBarButtonItem: UIBarButtonItem {
     
     var badgeLabel: UILabel = UILabel()
-    var badgeValue: String {
+    var badgeValue: String = "" {
         didSet {
             guard !shouldBadgeHide(badgeValue) else {
                 removeBadge()
@@ -28,15 +29,19 @@ class ENMBadgedBarButtonItem: UIBarButtonItem {
             if (badgeLabel.superview != nil) {
                 updateBadgeValueAnimated(true)
             } else {
-                badgeLabel = self.createBadgeLabel()
-                updateBadgeProperties()
-                customView?.addSubview(badgeLabel)
-                
-                // Pull the setting of the value and layer border radius off onto the next event loop.
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    self.badgeLabel.text = self.badgeValue
-                    self.updateBadgeFrame()
-                })
+                if let customView = self.customView {
+                    badgeLabel = self.createBadgeLabel()
+                    updateBadgeProperties()
+                    customView.addSubview(badgeLabel)
+                    
+                    // Pull the setting of the value and layer border radius off onto the next event loop.
+                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                        self.badgeLabel.text = self.badgeValue
+                        self.updateBadgeFrame()
+                    })
+                } else {
+                    assertionFailure("In order to present a badge on the bar button, a custom view should be set.")
+                }
             }
         }
     }
@@ -66,13 +71,15 @@ class ENMBadgedBarButtonItem: UIBarButtonItem {
         }
     }
     var badgeOriginX: CGFloat = kENMDefaultOriginX
-    var badgeOriginY: CGFloat {
-        get {
-            return kENMDefaultOriginY
-        }
-    }
+    var badgeOriginY: CGFloat = kENMDefaultOriginY
     var shouldHideBadgeAtZero: Bool = true
     var shouldAnimateBadge: Bool = true
+    
+    /**
+     This value is only used when using the bar button in a storyboard since you cannot
+     set a custom view.
+     */
+    var defaultCustomViewHeight: CGFloat = kENMDefaultCustomViewHeight
     
     init(customView: UIView, value: String) {
         badgeValue = value
@@ -81,8 +88,8 @@ class ENMBadgedBarButtonItem: UIBarButtonItem {
         self.customView = customView
     }
     
-    required init(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented.  This UIBarButtonItem requires a custom view in order to use.  Please use the designated initializer -init(customView:value:)")
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
     }
 }
 
@@ -188,7 +195,7 @@ extension ENMBadgedBarButtonItem {
     
     func updateBadgeProperties() {
         if let customView = self.customView {
-            badgeOriginX = customView.frame.size.width - badgeLabel.frame.size.width/2
+            badgeOriginX = customView.frame.width - badgeLabel.frame.size.width/2
         }
     }
 }

@@ -13,6 +13,8 @@ class MasterViewController: UITableViewController {
     var objects = NSMutableArray()
     var leftBarButton: ENMBadgedBarButtonItem?
     var count = 0
+    
+    @IBOutlet var item: ENMBadgedBarButtonItem!
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -21,7 +23,9 @@ class MasterViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setUpLeftBarButton()
+//        setUpLeftBarButton()
+        
+        item.customView = UIView()
 
         let addButton = UIBarButtonItem(barButtonSystemItem: .Rewind,
             target: self,
@@ -48,18 +52,23 @@ extension MasterViewController {
         
         let newBarButton = ENMBadgedBarButtonItem(customView: button, value: "\(count)")
         leftBarButton = newBarButton
-        navigationItem.leftBarButtonItem = leftBarButton
+//        navigationItem.leftBarButtonItem = leftBarButton
     }
 }
 
 extension MasterViewController {
     
-    func leftButtonPressed(_sender: UIButton) {
+    func leftButtonPressed(sender: UIButton) {
         count = count + 1
         leftBarButton?.badgeValue = "\(count)"
     }
     
-    func rightButtonPressed(_sender: UIButton) {
+    @IBAction func lbp(sender: ENMBadgedBarButtonItem) {
+        count = count + 1
+//        sender.badgeValue = "\(count)"
+    }
+    
+    func rightButtonPressed(sender: UIButton) {
         count = 0
         leftBarButton?.badgeValue = "0"
     }
